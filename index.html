@@ -749,6 +749,9 @@
                     id="stat-winrate">--%</span></div>
             <div class="stat-chip"><span class="label">今日</span><span class="value today" id="stat-today">--</span>戦
             </div>
+            <div class="stat-chip"><span class="label">今日勝率</span><span class="value win-rate"
+                    id="stat-today-rate">--%</span></div>
+        </div>
         </div>
     </header>
 
@@ -956,10 +959,14 @@
             const wins = records.filter(r => r.result === 'win').length;
             const rate = total > 0 ? Math.round((wins / total) * 100) : '--';
             const todayStart = new Date(); todayStart.setHours(0, 0, 0, 0);
-            const todayCount = records.filter(r => r.date >= todayStart.getTime()).length;
+            const todayRecords = records.filter(r => r.date >= todayStart.getTime());
+            const todayCount = todayRecords.length;
+            const todayWins = todayRecords.filter(r => r.result === 'win').length;
+            const todayRate = todayCount > 0 ? Math.round((todayWins / todayCount) * 100) : '--';
             document.getElementById('stat-total').textContent = total;
             document.getElementById('stat-winrate').textContent = rate + (total > 0 ? '%' : '');
             document.getElementById('stat-today').textContent = todayCount;
+            document.getElementById('stat-today-rate').textContent = todayCount > 0 ? todayRate + '%' : '--%';
         }
 
         function updateStageDropdown() {
