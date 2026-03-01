@@ -1,0 +1,789 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>マイスプラ指南ツール</title>
+    <style>
+        body {
+            background-color: #1e1e1e;
+            color: #ffffff;
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+        }
+
+        h1 {
+            color: #eaff3d;
+            text-shadow: 0 0 10px rgba(234, 255, 61, 0.5);
+            text-align: center;
+        }
+
+        /* スプレッドシート用リンク */
+        .spreadsheet-link {
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        .spreadsheet-link a {
+            display: inline-block;
+            background-color: #2ea44f;
+            color: white;
+            text-decoration: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 1em;
+            box-shadow: 0 4px 0 #237a3b;
+            transition: 0.1s;
+        }
+
+        .spreadsheet-link a:hover {
+            transform: translateY(2px);
+            box-shadow: 0 2px 0 #237a3b;
+        }
+
+        /* モード切替ボタン */
+        .toggle-btn {
+            background-color: #603bff;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 1.1em;
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 4px 0 #3a1cba;
+            margin: 0 auto 30px;
+            display: block;
+            transition: 0.1s;
+        }
+
+        .toggle-btn:hover {
+            background-color: #7252ff;
+            transform: translateY(2px);
+            box-shadow: 0 2px 0 #3a1cba;
+        }
+
+        /* 既存のレイアウト */
+        .schedule-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            justify-content: center;
+            min-height: 80px;
+        }
+
+        .rule-card {
+            background-color: #2a2a2a;
+            border-radius: 10px;
+            padding: 15px;
+            width: 300px;
+            border-top: 5px solid #f02d7d;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+        }
+
+        .rule-name {
+            font-size: 1.2em;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .stage-name {
+            background-color: #333;
+            padding: 8px;
+            margin: 5px 0;
+            border-radius: 5px;
+            border-left: 4px solid #603bff;
+        }
+
+        .record-form {
+            background-color: #222;
+            border: 2px dashed #0cf2b4;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 30px auto;
+            max-width: 800px;
+            text-align: center;
+        }
+
+        .form-row {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+
+        select,
+        input[type="number"],
+        input[type="text"] {
+            background-color: #333;
+            color: #fff;
+            border: 1px solid #555;
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 1.1em;
+        }
+
+        .btn-win,
+        .btn-lose {
+            font-size: 1.5em;
+            font-weight: bold;
+            padding: 15px 40px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .btn-win {
+            background-color: #ffaa00;
+            color: #000;
+        }
+
+        .btn-win:hover {
+            background-color: #ffcc00;
+            transform: scale(1.05);
+        }
+
+        .btn-lose {
+            background-color: #555;
+            color: #fff;
+        }
+
+        .btn-lose:hover {
+            background-color: #777;
+            transform: scale(1.05);
+        }
+
+        .advice-container {
+            margin-top: 40px;
+            padding: 20px;
+            background-color: #111;
+            border: 2px solid #555;
+            border-radius: 15px;
+            text-align: center;
+        }
+
+        .advice-title {
+            color: #fff;
+            font-size: 1.5em;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+
+        .compare-box {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+            align-items: stretch;
+        }
+
+        .compare-card {
+            background-color: #222;
+            padding: 20px;
+            border-radius: 10px;
+            width: 300px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .winner-card {
+            border: 3px solid #ffaa00;
+            box-shadow: 0 0 20px rgba(255, 170, 0, 0.4);
+            transform: scale(1.03);
+            z-index: 10;
+        }
+
+        .loser-card {
+            border: 1px solid #444;
+            opacity: 0.7;
+        }
+
+        .weapon-list {
+            margin-top: 15px;
+            text-align: left;
+            font-size: 0.9em;
+            background: rgba(0, 0, 0, 0.4);
+            padding: 10px;
+            border-radius: 8px;
+            flex-grow: 1;
+        }
+
+        .weapon-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            border-bottom: 1px dashed #444;
+            padding-bottom: 4px;
+        }
+
+        .weapon-item:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+        }
+
+        .high-win {
+            color: #0cf2b4;
+            font-weight: bold;
+        }
+
+        .low-win {
+            color: #888;
+        }
+
+        .no-data {
+            color: #555;
+            font-style: italic;
+        }
+
+        .conclusion {
+            margin-top: 30px;
+            font-size: 1.3em;
+            font-weight: bold;
+            padding: 15px;
+            background-color: #333;
+            border-radius: 8px;
+        }
+
+        .history-container {
+            margin-top: 40px;
+            padding: 20px;
+            background-color: #1a1a1a;
+            border: 2px solid #333;
+            border-radius: 15px;
+            max-width: 800px;
+            margin: 40px auto;
+        }
+
+        .history-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .history-item {
+            background-color: #2a2a2a;
+            padding: 10px 15px;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.9em;
+        }
+
+        .history-win {
+            border-left: 5px solid #ffaa00;
+        }
+
+        .history-lose {
+            border-left: 5px solid #555;
+        }
+
+        .history-kd {
+            font-weight: bold;
+            font-size: 1.2em;
+        }
+
+        .history-date {
+            color: #888;
+            font-size: 0.8em;
+        }
+
+        /* 📊 分析モード専用のデザイン */
+        .analysis-wrapper {
+            display: none;
+            margin-top: 20px;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .rule-section {
+            background-color: #222;
+            margin-bottom: 25px;
+            padding: 20px;
+            border-radius: 10px;
+            border-left: 6px solid #f02d7d;
+        }
+
+        .rule-section h3 {
+            color: #eaff3d;
+            margin-top: 0;
+            border-bottom: 1px solid #444;
+            padding-bottom: 10px;
+            font-size: 1.5em;
+        }
+
+        .stages-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .stage-box {
+            background-color: #1a1a1a;
+            padding: 15px;
+            border-radius: 8px;
+            flex: 1;
+            min-width: 250px;
+            border-top: 3px solid #603bff;
+        }
+
+        .stage-box h4 {
+            color: #0cf2b4;
+            margin: 0 0 10px 0;
+            font-size: 1.1em;
+        }
+
+        .reset-btn {
+            background: transparent;
+            color: #888;
+            border: 1px solid #888;
+            padding: 5px 10px;
+            margin-top: 30px;
+            cursor: pointer;
+            margin-bottom: 50px;
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>🦑 リアルタイム指南ツール 🦑</h1>
+
+    <div class="spreadsheet-link">
+        <a href="https://docs.google.com/spreadsheets/d/1TdTjlwc34-GDiI7n-kNmp_yVlNtrHr7gulNJBAhRAGc/edit?gid=0#gid=0"
+            target="_blank">
+            📊 スプレッドシートの戦績表を開く
+        </a>
+    </div>
+
+    <button id="toggle-btn" class="toggle-btn" onclick="toggleMode()">📊 全データ分析モードを開く</button>
+
+    <div id="main-ui">
+        <div class="schedule-container" id="schedule">
+            <p style="color: #ccc;">スケジュールを取得中...</p>
+        </div>
+
+        <div class="record-form">
+            <h2 style="color: #0cf2b4; margin-top:0;">📝 爆速・戦績メモ</h2>
+            <div class="form-row">
+                <select id="input-rule" onchange="updateStageDropdown()">
+                    <option value="バンカラ (チャレンジ)">バンカラ (チャレンジ)</option>
+                    <option value="バンカラ (オープン)">バンカラ (オープン)</option>
+                    <option value="Xマッチ">Xマッチ</option>
+                    <option value="ナワバリバトル">ナワバリバトル</option>
+                </select>
+
+                <select id="input-stage" style="width: 200px;">
+                    <option value="">ステージ読み込み中...</option>
+                </select>
+
+                <select id="input-weapon">
+                    <option value="リッター4K">リッター4K</option>
+                    <option value="リッター4Kスコープ">リッター4Kスコープ</option>
+                    <option value="リッター4Kカスタム">リッター4Kカスタム</option>
+                    <option value="リッター4Kカスタムスコープ">リッター4Kカスタムスコープ</option>
+                    <option value="R-PEN/5H">R-PEN/5H</option>
+                    <option value="スプラチャージャースコープ">スプラチャージャースコープ</option>
+                    <option value="トライストリンガーコラボ">トライストリンガーコラボ</option>
+                    <option value="バレルスピナー">バレルスピナー</option>
+                    <option value="ホクサイ・ヒュー">ホクサイ・ヒュー</option>
+                    <option value="ダイナモローラー">ダイナモローラー</option>
+                </select>
+            </div>
+            <div class="form-row">
+                <input type="number" id="input-kill" placeholder="キル数 (K)" min="0" style="width: 100px;">
+                <input type="number" id="input-death" placeholder="デス数 (D)" min="0" style="width: 100px;">
+            </div>
+            <div class="form-row" style="margin-top: 20px;">
+                <button class="btn-win" onclick="saveRecord('win')">👑 WIN</button>
+                <button class="btn-lose" onclick="saveRecord('lose')">💀 LOSE</button>
+            </div>
+            <div id="save-msg" style="color: #eaff3d; font-weight: bold; height: 20px;"></div>
+        </div>
+
+        <div class="advice-container" id="advice">
+            <div class="advice-title">🧠 AI 分析スタンバイ中...</div>
+        </div>
+
+        <div class="history-container" id="history-box" style="display: none;">
+            <div style="color: #fff; font-size: 1.3em; margin-bottom: 15px; text-align: center; font-weight: bold;">🕒
+                直近の戦績 (最新10件)</div>
+            <div class="history-list" id="history-list"></div>
+        </div>
+    </div>
+
+    <div id="analysis-ui" class="analysis-wrapper">
+        <h2 style="text-align: center; color: #eaff3d; margin-bottom: 30px;">📈 ルール・ステージ別 最強ブキランキング</h2>
+        <div id="analysis-content">
+            <p style="text-align:center; color:#ccc;">データを集計しています...</p>
+        </div>
+    </div>
+
+    <button class="reset-btn" onclick="resetData()">スマホのキャッシュを消去</button>
+
+    <script>
+        const myWeapons = [
+            'リッター4K', 'リッター4Kスコープ', 'リッター4Kカスタム', 'リッター4Kカスタムスコープ',
+            'R-PEN/5H', 'スプラチャージャースコープ', 'トライストリンガーコラボ', 'バレルスピナー',
+            'ホクサイ・ヒュー', 'ダイナモローラー'
+        ];
+        const STORAGE_KEY = 'spla_my_records';
+        const GAS_URL = "https://script.google.com/macros/s/AKfycbwXBXAkhzPBi5ka_nphYoKqO-EO6xYPr3wEqP3OCP6OwPKnv7AU-YFkuogGAb1FbZOCYw/exec";
+
+        let ruleStageMap = {};
+        let currentRuleDetailMap = {
+            'バンカラ (オープン)': '不明',
+            'バンカラ (チャレンジ)': '不明',
+            'Xマッチ': '不明',
+            'ナワバリバトル': 'レギュラー'
+        };
+
+        // 🔄 モード切り替えの処理
+        let isAnalysisMode = false;
+        function toggleMode() {
+            isAnalysisMode = !isAnalysisMode;
+            document.getElementById('main-ui').style.display = isAnalysisMode ? 'none' : 'block';
+            document.getElementById('analysis-ui').style.display = isAnalysisMode ? 'block' : 'none';
+
+            const btn = document.getElementById('toggle-btn');
+            if (isAnalysisMode) {
+                btn.innerText = "🔙 記録・リアルタイム指南に戻る";
+                btn.style.backgroundColor = "#ff4444";
+                btn.style.boxShadow = "0 4px 0 #cc0000";
+                renderFullAnalysis(); // 分析モードを開いた瞬間にデータを最新で集計！
+            } else {
+                btn.innerText = "📊 全データ分析モードを開く";
+                btn.style.backgroundColor = "#603bff";
+                btn.style.boxShadow = "0 4px 0 #3a1cba";
+            }
+        }
+
+        function saveRecord(result) {
+            const mode = document.getElementById('input-rule').value;
+            const stage = document.getElementById('input-stage').value || '不明';
+            const weapon = document.getElementById('input-weapon').value;
+            const kill = document.getElementById('input-kill').value;
+            const death = document.getElementById('input-death').value;
+            const detailRule = currentRuleDetailMap[mode] || "不明";
+
+            if (!kill || !death) { alert("キル数とデス数を入れてください！"); return; }
+
+            const recordData = {
+                date: new Date().getTime(), rule: mode, detailRule: detailRule,
+                stage: stage, weapon: weapon, kill: parseInt(kill), death: parseInt(death), result: result
+            };
+
+            let records = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+            records.push(recordData);
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(records));
+            renderAdvice();
+
+            document.getElementById('save-msg').innerText = "⏳ スプレッドシートへ送信中...";
+
+            fetch(GAS_URL, {
+                method: 'POST', mode: 'no-cors',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(recordData)
+            }).then(() => {
+                document.getElementById('save-msg').innerText = "✅ 送信完了！";
+                document.getElementById('input-kill').value = '';
+                document.getElementById('input-death').value = '';
+                setTimeout(() => { document.getElementById('save-msg').innerText = ""; }, 3000);
+            }).catch(() => {
+                document.getElementById('save-msg').innerText = "⚠️ 送信エラー（ローカル保存済）";
+            });
+        }
+
+        async function loadDataFromSpreadsheet() {
+            try {
+                const response = await fetch(GAS_URL);
+                const dbRecords = await response.json();
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(dbRecords));
+                renderAdvice();
+            } catch (error) { console.error("同期エラー:", error); renderAdvice(); }
+        }
+
+        function resetData() {
+            if (confirm("スマホの記憶（キャッシュ）を消去しますか？\n※スプレッドシートのデータは消えません。")) {
+                localStorage.removeItem(STORAGE_KEY);
+                renderAdvice();
+            }
+        }
+
+        function updateStageDropdown() {
+            const selectedMode = document.getElementById('input-rule').value;
+            const stageSelect = document.getElementById('input-stage');
+            stageSelect.innerHTML = '';
+            const stages = ruleStageMap[selectedMode] || [];
+            if (stages.length > 0) {
+                stages.forEach(s => { stageSelect.innerHTML += `<option value="${s}">${s}</option>`; });
+            } else {
+                stageSelect.innerHTML = `<option value="">開催されていません</option>`;
+            }
+        }
+
+        async function fetchSchedule() {
+            try {
+                const [scheduleRes, localeRes] = await Promise.all([
+                    fetch('https://splatoon3.ink/data/schedules.json'),
+                    fetch('https://splatoon3.ink/data/locale/ja-JP.json')
+                ]);
+                const data = await scheduleRes.json();
+                const locale = await localeRes.json();
+
+                function getStageName(stage) { return locale.stages[stage.id]?.name || stage.name; }
+                function getRuleName(rule) { return locale.rules[rule.id]?.name || rule.name; }
+
+                const now = new Date().getTime();
+                function getCurrent(nodes) {
+                    return nodes.find(n => {
+                        const start = new Date(n.startTime).getTime();
+                        const end = new Date(n.endTime).getTime();
+                        return start <= now && now < end;
+                    }) || nodes[0];
+                }
+
+                const regularNode = getCurrent(data.data.regularSchedules.nodes);
+                const bankaraNode = getCurrent(data.data.bankaraSchedules.nodes);
+                const xMatchNode = getCurrent(data.data.xSchedules.nodes);
+
+                const container = document.getElementById('schedule');
+                container.innerHTML = '';
+                ruleStageMap = {};
+                currentRuleDetailMap = {};
+
+                function createCard(title, ruleName, stage1Name, stage2Name, color) {
+                    return `
+                        <div class="rule-card" style="border-top-color: ${color}">
+                            <div class="rule-name">${title} <br><span style="color:#0cf2b4;">【${ruleName}】</span></div>
+                            <div class="stage-name">📍 ${stage1Name}</div>
+                            <div class="stage-name">📍 ${stage2Name}</div>
+                        </div>
+                    `;
+                }
+
+                if (regularNode && regularNode.regularMatchSetting) {
+                    const setting = regularNode.regularMatchSetting;
+                    const s1 = getStageName(setting.vsStages[0]); const s2 = getStageName(setting.vsStages[1]);
+                    const ruleName = getRuleName(setting.vsRule);
+                    container.innerHTML += createCard('ナワバリバトル', ruleName, s1, s2, '#eaff3d');
+                    ruleStageMap['ナワバリバトル'] = [s1, s2]; currentRuleDetailMap['ナワバリバトル'] = ruleName;
+                }
+                if (bankaraNode && bankaraNode.bankaraMatchSettings) {
+                    const bankaraOpen = bankaraNode.bankaraMatchSettings.find(s => s.bankaraMode === 'OPEN');
+                    const bankaraChallenge = bankaraNode.bankaraMatchSettings.find(s => s.bankaraMode === 'CHALLENGE');
+                    if (bankaraOpen) {
+                        const s1 = getStageName(bankaraOpen.vsStages[0]); const s2 = getStageName(bankaraOpen.vsStages[1]);
+                        const ruleName = getRuleName(bankaraOpen.vsRule);
+                        container.innerHTML += createCard('バンカラ (オープン)', ruleName, s1, s2, '#f02d7d');
+                        ruleStageMap['バンカラ (オープン)'] = [s1, s2]; currentRuleDetailMap['バンカラ (オープン)'] = ruleName;
+                    }
+                    if (bankaraChallenge) {
+                        const s1 = getStageName(bankaraChallenge.vsStages[0]); const s2 = getStageName(bankaraChallenge.vsStages[1]);
+                        const ruleName = getRuleName(bankaraChallenge.vsRule);
+                        container.innerHTML += createCard('バンカラ (チャレンジ)', ruleName, s1, s2, '#f02d7d');
+                        ruleStageMap['バンカラ (チャレンジ)'] = [s1, s2]; currentRuleDetailMap['バンカラ (チャレンジ)'] = ruleName;
+                    }
+                }
+                if (xMatchNode && xMatchNode.xMatchSetting) {
+                    const setting = xMatchNode.xMatchSetting;
+                    const s1 = getStageName(setting.vsStages[0]); const s2 = getStageName(setting.vsStages[1]);
+                    const ruleName = getRuleName(setting.vsRule);
+                    container.innerHTML += createCard('Xマッチ', ruleName, s1, s2, '#0cf2b4');
+                    ruleStageMap['Xマッチ'] = [s1, s2]; currentRuleDetailMap['Xマッチ'] = ruleName;
+                }
+                updateStageDropdown();
+            } catch (error) { document.getElementById('schedule').innerHTML = `<p style="color: #ff4444;">スケジュール取得失敗</p>`; }
+            renderAdvice();
+        }
+
+        function renderAdvice() {
+            const adviceContainer = document.getElementById('advice');
+            const historyBox = document.getElementById('history-box');
+            const historyList = document.getElementById('history-list');
+
+            let records = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+
+            function calcWinRates(modeName) {
+                const targetDetailRule = currentRuleDetailMap[modeName] || "不明";
+                const currentStages = ruleStageMap[modeName] || [];
+
+                const filteredRecords = records.filter(r => {
+                    if (currentStages.length === 0) return r.detailRule === targetDetailRule;
+                    return r.detailRule === targetDetailRule && currentStages.includes(r.stage);
+                });
+
+                return myWeapons.map(weapon => {
+                    const weaponRecords = filteredRecords.filter(r => r.weapon === weapon);
+                    const totalMatches = weaponRecords.length;
+                    const wins = weaponRecords.filter(r => r.result === 'win').length;
+                    if (totalMatches === 0) return { name: weapon, rate: -1, text: 'データなし' };
+                    return { name: weapon, rate: Math.round((wins / totalMatches) * 100), text: `${Math.round((wins / totalMatches) * 100)}% (${wins}勝/${totalMatches}戦)` };
+                }).sort((a, b) => b.rate - a.rate);
+            }
+
+            const openData = calcWinRates('バンカラ (オープン)');
+            const challengeData = calcWinRates('バンカラ (チャレンジ)');
+            const xMatchData = calcWinRates('Xマッチ');
+
+            let topOpen = openData[0].rate >= 0 ? openData[0].rate : -1;
+            let topChallenge = challengeData[0].rate >= 0 ? challengeData[0].rate : -1;
+            let topXMatch = xMatchData[0].rate >= 0 ? xMatchData[0].rate : -1;
+
+            const maxWinRate = Math.max(topOpen, topChallenge, topXMatch);
+
+            if (maxWinRate === -1) {
+                adviceContainer.innerHTML = `
+                    <div class="advice-title">🧠 「ルール＋ステージ」完全一致データ待ち...</div>
+                    <p style="color:#ccc;">現在のスケジュールに一致する過去データがありません。</p>
+                `;
+                historyBox.style.display = 'none'; return;
+            }
+
+            const isOpenBest = maxWinRate === topOpen;
+            const isChallengeBest = maxWinRate === topChallenge && !isOpenBest;
+            const isXMatchBest = maxWinRate === topXMatch && !isOpenBest && !isChallengeBest;
+
+            let bestModeName = ''; let bestModeColor = ''; let bestWeaponName = '';
+            if (isOpenBest) { bestModeName = 'バンカラ (オープン)'; bestModeColor = '#f02d7d'; bestWeaponName = openData[0].name; }
+            else if (isChallengeBest) { bestModeName = 'バンカラ (チャレンジ)'; bestModeColor = '#f02d7d'; bestWeaponName = challengeData[0].name; }
+            else { bestModeName = 'Xマッチ'; bestModeColor = '#0cf2b4'; bestWeaponName = xMatchData[0].name; }
+
+            const ruleSelect = document.getElementById('input-rule');
+            const weaponSelect = document.getElementById('input-weapon');
+            if (ruleSelect.value !== bestModeName) { ruleSelect.value = bestModeName; updateStageDropdown(); }
+            if (bestWeaponName) { weaponSelect.value = bestWeaponName; }
+
+            function createWeaponListHtml(weaponData) {
+                let html = '<div class="weapon-list">';
+                weaponData.forEach(w => {
+                    let colorClass = w.rate >= 50 ? 'high-win' : (w.rate >= 0 ? 'low-win' : 'no-data');
+                    html += `<div class="weapon-item ${colorClass}"><span>${w.name}</span><span>${w.text}</span></div>`;
+                });
+                return html + '</div>';
+            }
+
+            adviceContainer.innerHTML = `
+                <div class="advice-title">📊 今の「ルール＋ステージ」に特化した勝率分析</div>
+                <div class="compare-box">
+                    <div class="compare-card ${isOpenBest ? 'winner-card' : 'loser-card'}">
+                        <div style="font-weight:bold;">オープン【${currentRuleDetailMap['バンカラ (オープン)']}】</div>
+                        ${createWeaponListHtml(openData)}
+                    </div>
+                    <div class="compare-card ${isChallengeBest ? 'winner-card' : 'loser-card'}">
+                        <div style="font-weight:bold;">チャレンジ【${currentRuleDetailMap['バンカラ (チャレンジ)']}】</div>
+                        ${createWeaponListHtml(challengeData)}
+                    </div>
+                    <div class="compare-card ${isXMatchBest ? 'winner-card' : 'loser-card'}">
+                        <div style="font-weight:bold;">Xマッチ【${currentRuleDetailMap['Xマッチ']}】</div>
+                        ${createWeaponListHtml(xMatchData)}
+                    </div>
+                </div>
+                <div class="conclusion">💡 結論：今は <span style="color: ${bestModeColor};">「${bestModeName}」</span> が一番勝てそうです！</div>
+            `;
+
+            historyBox.style.display = 'block';
+            const sortedRecords = [...records].sort((a, b) => b.date - a.date);
+            const recentRecords = sortedRecords.slice(0, 10);
+            let historyHtml = '';
+            recentRecords.forEach(r => {
+                const isWin = r.result === 'win'; const d = new Date(r.date);
+                const dateStr = `${d.getMonth() + 1}/${d.getDate()} ${d.getHours()}:${String(d.getMinutes()).padStart(2, '0')}`;
+                historyHtml += `
+                    <div class="history-item ${isWin ? 'history-win' : 'history-lose'}">
+                        <div class="history-info">
+                            <div style="font-weight:bold; color:#0cf2b4;">${r.rule}【${r.detailRule || '不明'}】</div>
+                            <div>📍 ${r.stage} / 🔫 ${r.weapon}</div>
+                            <div class="history-date">${dateStr}</div>
+                        </div>
+                        <div style="text-align: right;">
+                            <div style="font-weight:bold; color:${isWin ? '#ffaa00' : '#888'}">${isWin ? 'WIN' : 'LOSE'}</div>
+                            <div class="history-kd">${r.kill}k / ${r.death}d</div>
+                        </div>
+                    </div>
+                `;
+            });
+            document.getElementById('history-list').innerHTML = historyHtml;
+        }
+
+        // ==========================================
+        // 📊 全データ分析の集計・描画ロジック
+        // ==========================================
+        function renderFullAnalysis() {
+            let records = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+            let analysisBox = document.getElementById('analysis-content');
+
+            if (records.length === 0) {
+                analysisBox.innerHTML = "<p style='text-align:center; color:#888;'>まだ記録がありません。</p>";
+                return;
+            }
+
+            // ルール -> ステージ -> ブキ の順番でデータをまとめる箱を作る
+            let dataMap = {};
+            records.forEach(r => {
+                let ruleName = (!r.detailRule || r.detailRule === '不明') ? '【過去の未分類データ】' : r.detailRule;
+                let stageName = r.stage || "ステージ不明";
+                let weaponName = r.weapon;
+                let isWin = r.result === 'win';
+
+                if (!dataMap[ruleName]) dataMap[ruleName] = {};
+                if (!dataMap[ruleName][stageName]) dataMap[ruleName][stageName] = {};
+                if (!dataMap[ruleName][stageName][weaponName]) dataMap[ruleName][stageName][weaponName] = { win: 0, total: 0 };
+
+                dataMap[ruleName][stageName][weaponName].total++;
+                if (isWin) dataMap[ruleName][stageName][weaponName].win++;
+            });
+
+            let html = "";
+            for (let rule in dataMap) {
+                html += `<div class="rule-section"><h3>🎮 ${rule}</h3><div class="stages-grid">`;
+
+                for (let stage in dataMap[rule]) {
+                    html += `<div class="stage-box"><h4>📍 ${stage}</h4>`;
+
+                    // ブキごとの勝率を計算して配列にする
+                    let wData = [];
+                    for (let weapon in dataMap[rule][stage]) {
+                        let d = dataMap[rule][stage][weapon];
+                        let rate = Math.round((d.win / d.total) * 100);
+                        wData.push({ weapon: weapon, rate: rate, win: d.win, total: d.total });
+                    }
+
+                    // 勝率が高い順に並び替え（勝率が同じなら試合数が多い方を上にする）
+                    wData.sort((a, b) => {
+                        if (b.rate !== a.rate) return b.rate - a.rate;
+                        return b.total - a.total;
+                    });
+
+                    html += `<div class="weapon-list" style="margin-top:0;">`;
+                    wData.forEach((w, index) => {
+                        let rank = index === 0 ? "🥇" : (index === 1 ? "🥈" : (index === 2 ? "🥉" : "　"));
+                        let colorClass = w.rate >= 50 ? 'high-win' : 'low-win';
+                        html += `
+                            <div class="weapon-item ${colorClass}">
+                                <span>${rank} ${w.weapon}</span>
+                                <span>${w.rate}% (${w.win}勝/${w.total}戦)</span>
+                            </div>
+                        `;
+                    });
+                    html += `</div></div>`;
+                }
+                html += `</div></div>`;
+            }
+
+            analysisBox.innerHTML = html;
+        }
+
+        fetchSchedule();
+        loadDataFromSpreadsheet();
+    </script>
+</body>
+
+</html>
