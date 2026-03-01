@@ -50,13 +50,43 @@
             box-shadow: 0 4px 20px rgba(96, 59, 255, 0.3);
         }
 
-        h1 {
-            color: var(--yellow);
-            text-shadow: 0 0 18px rgba(234, 255, 61, 0.6), 0 0 40px rgba(234, 255, 61, 0.2);
-            margin: 0 0 10px;
-            font-size: clamp(1.2em, 4vw, 1.8em);
+        /* ===== LOGO ===== */
+        .logo-main {
+            font-size: clamp(2em, 7vw, 3em);
             font-weight: 900;
-            letter-spacing: 2px;
+            letter-spacing: 6px;
+            color: var(--yellow);
+            text-shadow: 0 0 20px rgba(234, 255, 61, 0.7), 0 0 50px rgba(234, 255, 61, 0.3);
+            display: inline-block;
+        }
+
+        .logo-sub {
+            font-size: clamp(2em, 7vw, 3em);
+            font-weight: 900;
+            letter-spacing: 6px;
+            color: #fff;
+            margin-left: 12px;
+            opacity: 0.85;
+        }
+
+        .logo-caption {
+            font-size: 0.75em;
+            color: var(--text-sub);
+            letter-spacing: 4px;
+            margin-top: 2px;
+            margin-bottom: 10px;
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 1em;
+            font-weight: 900;
+        }
+
+        .section-accent {
+            color: var(--teal);
+            font-weight: 900;
+            margin-right: 4px;
         }
 
         /* --- Stats Bar --- */
@@ -742,7 +772,8 @@
 
     <!-- HEADER -->
     <header class="site-header">
-        <h1>🦑 リアルタイム指南ツール 🦑</h1>
+        <h1><span class="logo-main">SPLA</span><span class="logo-sub">GUIDE</span></h1>
+        <div class="logo-caption">リアルタイム指南ツール</div>
         <div class="stats-bar" id="stats-bar">
             <div class="stat-chip"><span class="label">通算</span><span class="value" id="stat-total">--</span>戦</div>
             <div class="stat-chip"><span class="label">勝率</span><span class="value win-rate"
@@ -757,8 +788,8 @@
 
     <!-- TABS -->
     <div class="tab-bar">
-        <button class="tab-btn active" id="tab-record-btn" onclick="switchTab('record')">🎮 記録・指南</button>
-        <button class="tab-btn" id="tab-analysis-btn" onclick="switchTab('analysis')">📊 全データ分析</button>
+        <button class="tab-btn active" id="tab-record-btn" onclick="switchTab('record')">▶ 記録・指南</button>
+        <button class="tab-btn" id="tab-analysis-btn" onclick="switchTab('analysis')">◈ 全データ分析</button>
     </div>
 
     <!-- TAB: 記録モード -->
@@ -767,7 +798,7 @@
         <div class="spreadsheet-link">
             <a href="https://docs.google.com/spreadsheets/d/1TdTjlwc34-GDiI7n-kNmp_yVlNtrHr7gulNJBAhRAGc/edit?gid=0#gid=0"
                 target="_blank">
-                📊 スプレッドシートの戦績表を開く
+                ↗ スプレッドシートの戦績表を開く
             </a>
         </div>
 
@@ -776,7 +807,8 @@
         </div>
 
         <div class="record-form">
-            <h2>📝 爆速・戦績メモ</h2>
+            <h2><span style="color:var(--text-sub);font-weight:400;font-size:0.75em;letter-spacing:3px;">//</span>
+                RECORD</h2>
             <div class="form-row">
                 <select id="input-rule" onchange="updateStageDropdown()">
                     <option value="バンカラ (チャレンジ)">バンカラ (チャレンジ)</option>
@@ -817,38 +849,39 @@
                 </div>
             </div>
             <div class="result-btns">
-                <button class="btn-win" onclick="saveRecord('win')">👑 WIN</button>
-                <button class="btn-lose" onclick="saveRecord('lose')">💀 LOSE</button>
+                <button class="btn-win" onclick="saveRecord('win')">WIN</button>
+                <button class="btn-lose" onclick="saveRecord('lose')">LOSE</button>
             </div>
             <div id="save-msg"></div>
         </div>
 
         <div class="advice-container" id="advice">
-            <div class="advice-title">🧠 AI 分析スタンバイ中...</div>
+            <div class="advice-title">— AI 分析スタンバイ中...</div>
         </div>
 
         <div class="today-container" id="today-box" style="display:none;">
-            <div class="section-title">⚡ 今日の戦績</div>
+            <div class="section-title"><span class="section-accent">—</span> TODAY</div>
             <div class="history-list" id="today-list"></div>
         </div>
 
         <div class="history-container" id="history-box" style="display:none;">
-            <div class="section-title">🕒 直近の戦績 <span
-                    style="font-weight:400;font-size:0.85em;color:var(--text-sub);">(最新10件)</span></div>
+            <div class="section-title"><span class="section-accent">—</span> HISTORY <span
+                    style="font-weight:400;font-size:0.85em;color:var(--text-sub);">/ 最新10件</span></div>
             <div class="history-list" id="history-list"></div>
         </div>
     </div>
 
     <!-- TAB: 分析モード -->
     <div class="tab-content" id="tab-analysis">
-        <h2 style="text-align:center; color:var(--yellow); margin-bottom:24px; font-weight:900;">📈 ルール・ステージ別 最強ブキランキング
-        </h2>
+        <h2 style="text-align:center; color:var(--yellow); margin-bottom:24px; font-weight:900; letter-spacing:2px;">
+            WEAPON RANKING</h2>
+        <p style="text-align:center;color:var(--text-sub);margin:-16px 0 24px;font-size:0.9em;">ルール・ステージ別 最強ブキ</p>
         <div id="analysis-content">
             <p style="text-align:center; color:#ccc;">データを集計しています...</p>
         </div>
     </div>
 
-    <button class="reset-btn" onclick="resetData()">🗑 キャッシュを消去</button>
+    <button class="reset-btn" onclick="resetData()">キャッシュを消去</button>
 
     <script>
         const myWeapons = [
@@ -1019,8 +1052,8 @@
                             <div class="rule-card-name">${mode}</div>
                             <div class="rule-card-detail" style="color:var(--teal);">【${ruleName}】</div>
                         </div>
-                        <div class="stage-name">📍 ${s1}</div>
-                        <div class="stage-name">📍 ${s2}</div>
+                        <div class="stage-name">› ${s1}</div>
+                        <div class="stage-name">› ${s2}</div>
                     </div>
                 `;
                 }
@@ -1168,7 +1201,7 @@
                     ${createWeaponListHtml(xMatchData)}
                 </div>
             </div>
-            <div class="conclusion">💡 結論：今は <span style="color:${bestModeColor};">「${bestModeName}」</span> が一番勝てそうです！</div>
+            <div class="conclusion">▶ 今は <span style="color:${bestModeColor};">「${bestModeName}」</span> が一番勝てそう！</div>
         `;
 
             historyBox.style.display = 'block';
@@ -1198,9 +1231,9 @@
 
             let html = "";
             for (let rule in dataMap) {
-                html += `<div class="rule-section"><h3>🎮 ${rule}</h3><div class="stages-grid">`;
+                html += `<div class="rule-section"><h3>// ${rule}</h3><div class="stages-grid">`;
                 for (let stage in dataMap[rule]) {
-                    html += `<div class="stage-box"><h4>📍 ${stage}</h4>`;
+                    html += `<div class="stage-box"><h4>› ${stage}</h4>`;
                     let wData = [];
                     for (let weapon in dataMap[rule][stage]) {
                         let d = dataMap[rule][stage][weapon];
