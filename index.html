@@ -1142,8 +1142,8 @@
                     const wr = filteredRecords.filter(r => r.weapon === weapon);
                     const total = wr.length;
                     const wins = wr.filter(r => r.result === 'win').length;
-                    if (total === 0) return { name: weapon, rate: -1, text: 'データなし' };
-                    return { name: weapon, rate: Math.round((wins / total) * 100), text: `${Math.round((wins / total) * 100)}% (${wins}勝/${total}戦)` };
+                    if (total < 5) return { name: weapon, rate: -1, text: total === 0 ? 'データなし' : `データ不足 (${total}戦)`, total: total };
+                    return { name: weapon, rate: Math.round((wins / total) * 100), text: `${Math.round((wins / total) * 100)}% (${wins}勝/${total}戦)`, total: total };
                 }).sort((a, b) => b.rate - a.rate);
             }
 
@@ -1234,18 +1234,28 @@
                 html += `<div class="rule-section"><h3>// ${rule}</h3><div class="stages-grid">`;
                 for (let stage in dataMap[rule]) {
                     html += `<div class="stage-box"><h4>› ${stage}</h4>`;
-                    let wData = [];
+                    let wDataValid = [];
+                    let wDataInvalid = [];
                     for (let weapon in dataMap[rule][stage]) {
                         let d = dataMap[rule][stage][weapon];
                         let rate = Math.round((d.win / d.total) * 100);
-                        wData.push({ weapon, rate, win: d.win, total: d.total });
+                        if (d.total >= 5) {
+                            wDataValid.push({ weapon, rate, win: d.win, total: d.total });
+                        } else {
+                            wDataInvalid.push({ weapon, rate: -1, win: d.win, total: d.total });
+                        }
                     }
-                    wData.sort((a, b) => b.rate !== a.rate ? b.rate - a.rate : b.total - a.total);
+                    wDataValid.sort((a, b) => b.rate !== a.rate ? b.rate - a.rate : b.total - a.total);
+                    wDataInvalid.sort((a, b) => b.total - a.total);
+
                     html += `<div class="weapon-list" style="margin-top:0;">`;
-                    wData.forEach((w, i) => {
+                    wDataValid.forEach((w, i) => {
                         let rank = i === 0 ? "🥇" : (i === 1 ? "🥈" : (i === 2 ? "🥉" : "　"));
                         let cls = w.rate >= 50 ? 'high-win' : 'low-win';
                         html += `<div class="weapon-item ${cls}"><span>${rank} ${w.weapon}</span><span>${w.rate}% (${w.win}勝/${w.total}戦)</span></div>`;
+                    });
+                    wDataInvalid.forEach((w) => {
+                        html += `<div class="weapon-item no-data"><span>　 ${w.weapon}</span><span>データ不足 (${w.total}戦)</span></div>`;
                     });
                     html += `</div></div>`;
                 }
