@@ -1103,7 +1103,7 @@
             <div class="history-item">
                 <div class="history-info">
                     <div class="rule-label">${r.rule}【${r.detailRule || '不明'}】</div>
-                    <div class="stage-weapon">📍 ${r.stage} / 🔫 ${r.weapon}</div>
+                    <div class="stage-weapon">› ${r.stage} · ${r.weapon}</div>
                     <div class="history-date">${dateStr}</div>
                 </div>
                 <div class="history-right">
@@ -1157,7 +1157,7 @@
 
             if (maxWinRate === -1) {
                 adviceContainer.innerHTML = `
-                <div class="advice-title">🧠 「ルール＋ステージ」完全一致データ待ち...</div>
+                <div class="advice-title">— 「ルール＋ステージ」完全一致データ待ち...</div>
                 <p style="color:#ccc; text-align:center;">現在のスケジュールに一致する過去データがありません。</p>
             `;
                 historyBox.style.display = 'none';
@@ -1186,7 +1186,7 @@
             }
 
             adviceContainer.innerHTML = `
-            <div class="advice-title">📊 今の「ルール＋ステージ」に特化した勝率分析</div>
+            <div class="advice-title">— 今の「ルール＋ステージ」に特化した勝率分析</div>
             <div class="compare-box">
                 <div class="compare-card ${isOpenBest ? 'winner-card' : 'loser-card'}">
                     <div class="card-title">オープン【${currentRuleDetailMap['バンカラ (オープン)']}】</div>
