@@ -1169,9 +1169,9 @@
             const isXMatchBest = maxWinRate === topXMatch && !isOpenBest && !isChallengeBest;
 
             let bestModeName = '', bestModeColor = '', bestWeaponName = '';
-            if (isOpenBest) { bestModeName = 'バンカラ (オープン)'; bestModeColor = 'var(--pink)'; bestWeaponName = openData[0].name; }
-            else if (isChallengeBest) { bestModeName = 'バンカラ (チャレンジ)'; bestModeColor = 'var(--pink)'; bestWeaponName = challengeData[0].name; }
-            else { bestModeName = 'Xマッチ'; bestModeColor = 'var(--teal)'; bestWeaponName = xMatchData[0].name; }
+            if (isOpenBest) { bestModeName = 'バンカラ (オープン)'; bestModeColor = 'var(--pink)'; bestWeaponName = openData[0].rate >= 0 ? openData[0].name : ''; }
+            else if (isChallengeBest) { bestModeName = 'バンカラ (チャレンジ)'; bestModeColor = 'var(--pink)'; bestWeaponName = challengeData[0].rate >= 0 ? challengeData[0].name : ''; }
+            else { bestModeName = 'Xマッチ'; bestModeColor = 'var(--teal)'; bestWeaponName = xMatchData[0].rate >= 0 ? xMatchData[0].name : ''; }
 
             const ruleSelect = document.getElementById('input-rule');
             const weaponSelect = document.getElementById('input-weapon');
