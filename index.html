@@ -583,6 +583,42 @@
             font-style: italic;
         }
 
+        .kd-info {
+            font-size: 0.8em;
+            color: var(--text-sub);
+            margin-top: 2px;
+        }
+
+        .kd-value {
+            font-weight: 700;
+            color: #ddd;
+        }
+
+        .kd-ratio {
+            margin-left: 6px;
+            padding: 1px 6px;
+            border-radius: 4px;
+            font-size: 0.85em;
+        }
+
+        .kd-high { background: rgba(12, 242, 180, 0.2); color: var(--teal); }
+        .kd-mid  { background: rgba(255, 255, 255, 0.1); color: #ccc; }
+        .kd-low  { background: rgba(240, 45, 125, 0.2); color: var(--pink); }
+
+        .trend-badge {
+            display: inline-block;
+            padding: 2px 10px;
+            border-radius: 12px;
+            font-size: 0.75em;
+            font-weight: 900;
+            margin-left: 10px;
+            vertical-align: middle;
+            text-transform: uppercase;
+        }
+        .trend-up { background: var(--teal); color: var(--bg); }
+        .trend-down { background: var(--pink); color: #fff; }
+        .trend-flat { background: var(--bg3); color: var(--text-sub); }
+
         .conclusion {
             margin-top: 16px;
             font-size: 1.15em;
@@ -1149,10 +1185,27 @@
                     const wr = filteredRecords.filter(r => r.weapon === weapon);
                     const total = wr.length;
                     const wins = wr.filter(r => r.result === 'win').length;
-                    if (total < 5) return { name: weapon, rate: -1, text: total === 0 ? 'データなし' : `データ不足 (${total}戦)`, total: total };
-                    return { name: weapon, rate: Math.round((wins / total) * 100), text: `${Math.round((wins / total) * 100)}% (${wins}勝/${total}戦)`, total: total };
+                    const totalK = wr.reduce((sum, r) => sum + (parseInt(r.kill) || 0), 0);
+                    const totalD = wr.reduce((sum, r) => sum + (parseInt(r.death) || 0), 0);
+                    const avgK = total > 0 ? (totalK / total).toFixed(1) : 0;
+                    const avgD = total > 0 ? (totalD / total).toFixed(1) : 0;
+                    const kd = totalD > 0 ? (totalK / totalD).toFixed(2) : (totalK > 0 ? totalK.toFixed(2) : "0.00");
+
+                    if (total < 5) return { name: weapon, rate: -1, text: total === 0 ? 'データなし' : `データ不足 (${total}戦)`, total, avgK, avgD, kd };
+                    return { 
+                        name: weapon, 
+                        rate: Math.round((wins / total) * 100), 
+                        text: `${Math.round((wins / total) * 100)}% (${wins}勝/${total}戦)`, 
+                        total, avgK, avgD, kd 
+                    };
                 }).sort((a, b) => b.rate - a.rate);
             }
+
+            // 直近50戦のトレンド計算
+            const last50 = records.sort((a, b) => b.date - a.date).slice(0, 50);
+            const recentWinRate = last50.length > 0 ? Math.round((last50.filter(r => r.result === 'win').length / last50.length) * 100) : 0;
+            const trendClass = recentWinRate >= 60 ? 'trend-up' : (recentWinRate <= 40 ? 'trend-down' : 'trend-flat');
+            const trendText = recentWinRate >= 60 ? 'HOT' : (recentWinRate <= 40 ? 'COLD' : 'STEADY');
 
             const openData = calcWinRates('バンカラ (オープン)');
             const challengeData = calcWinRates('バンカラ (チャレンジ)');
@@ -1188,12 +1241,29 @@
             function createWeaponListHtml(weaponData) {
                 return '<div class="weapon-list">' + weaponData.map(w => {
                     let cls = w.rate >= 50 ? 'high-win' : (w.rate >= 0 ? 'low-win' : 'no-data');
-                    return `<div class="weapon-item ${cls}"><span>${w.name}</span><span>${w.text}</span></div>`;
+                    let kdCls = w.kd >= 1.2 ? 'kd-high' : (w.kd >= 0.8 ? 'kd-mid' : 'kd-low');
+                    return `
+                        <div class="weapon-item ${cls}">
+                            <div style="flex:1;">
+                                <div style="display:flex; justify-content:space-between;">
+                                    <span>${w.name}</span>
+                                    <span>${w.text}</span>
+                                </div>
+                                ${w.total > 0 ? `
+                                <div class="kd-info">
+                                    AVG: <span class="kd-value">${w.avgK}k / ${w.avgD}d</span>
+                                    <span class="kd-ratio ${kdCls}">K/D ${w.kd}</span>
+                                </div>` : ''}
+                            </div>
+                        </div>`;
                 }).join('') + '</div>';
             }
 
             adviceContainer.innerHTML = `
-            <div class="advice-title">— 今の「ルール＋ステージ」に特化した勝率分析</div>
+            <div class="advice-title">
+                — 今の「ルール＋ステージ」分析
+                <span class="trend-badge ${trendClass}" title="直近50戦の勢い: ${recentWinRate}%">${trendText} TREND</span>
+            </div>
             <div class="compare-box">
                 <div class="compare-card ${isOpenBest ? 'winner-card' : 'loser-card'}">
                     <div class="card-title">オープン【${currentRuleDetailMap['バンカラ (オープン)']}】</div>
@@ -1231,9 +1301,11 @@
                 let weaponName = r.weapon;
                 if (!dataMap[ruleName]) dataMap[ruleName] = {};
                 if (!dataMap[ruleName][stageName]) dataMap[ruleName][stageName] = {};
-                if (!dataMap[ruleName][stageName][weaponName]) dataMap[ruleName][stageName][weaponName] = { win: 0, total: 0 };
+                if (!dataMap[ruleName][stageName][weaponName]) dataMap[ruleName][stageName][weaponName] = { win: 0, total: 0, kill: 0, death: 0 };
                 dataMap[ruleName][stageName][weaponName].total++;
                 if (r.result === 'win') dataMap[ruleName][stageName][weaponName].win++;
+                dataMap[ruleName][stageName][weaponName].kill += (parseInt(r.kill) || 0);
+                dataMap[ruleName][stageName][weaponName].death += (parseInt(r.death) || 0);
             });
 
             let html = "";
@@ -1246,10 +1318,13 @@
                     for (let weapon in dataMap[rule][stage]) {
                         let d = dataMap[rule][stage][weapon];
                         let rate = Math.round((d.win / d.total) * 100);
+                        let avgK = (d.kill / d.total).toFixed(1);
+                        let avgD = (d.death / d.total).toFixed(1);
+                        let kd = d.death > 0 ? (d.kill / d.death).toFixed(2) : d.kill.toFixed(2);
                         if (d.total >= 5) {
-                            wDataValid.push({ weapon, rate, win: d.win, total: d.total });
+                            wDataValid.push({ weapon, rate, win: d.win, total: d.total, avgK, avgD, kd });
                         } else {
-                            wDataInvalid.push({ weapon, rate: -1, win: d.win, total: d.total });
+                            wDataInvalid.push({ weapon, rate: -1, win: d.win, total: d.total, avgK, avgD, kd });
                         }
                     }
                     wDataValid.sort((a, b) => b.rate !== a.rate ? b.rate - a.rate : b.total - a.total);
@@ -1259,10 +1334,36 @@
                     wDataValid.forEach((w, i) => {
                         let rank = i === 0 ? "🥇" : (i === 1 ? "🥈" : (i === 2 ? "🥉" : "　"));
                         let cls = w.rate >= 50 ? 'high-win' : 'low-win';
-                        html += `<div class="weapon-item ${cls}"><span>${rank} ${w.weapon}</span><span>${w.rate}% (${w.win}勝/${w.total}戦)</span></div>`;
+                        let kdCls = w.kd >= 1.2 ? 'kd-high' : (w.kd >= 0.8 ? 'kd-mid' : 'kd-low');
+                        html += `
+                            <div class="weapon-item ${cls}">
+                                <div style="flex:1;">
+                                    <div style="display:flex; justify-content:space-between;">
+                                        <span>${rank} ${w.weapon}</span>
+                                        <span>${w.rate}% (${w.win}勝/${w.total}戦)</span>
+                                    </div>
+                                    <div class="kd-info">
+                                        AVG: <span class="kd-value">${w.avgK}k / ${w.avgD}d</span>
+                                        <span class="kd-ratio ${kdCls}">K/D ${w.kd}</span>
+                                    </div>
+                                </div>
+                            </div>`;
                     });
                     wDataInvalid.forEach((w) => {
-                        html += `<div class="weapon-item no-data"><span>　 ${w.weapon}</span><span>データ不足 (${w.total}戦)</span></div>`;
+                        let kdCls = w.kd >= 1.2 ? 'kd-high' : (w.kd >= 0.8 ? 'kd-mid' : 'kd-low');
+                        html += `
+                            <div class="weapon-item no-data">
+                                <div style="flex:1;">
+                                    <div style="display:flex; justify-content:space-between;">
+                                        <span>　 ${w.weapon}</span>
+                                        <span>データ不足 (${w.total}戦)</span>
+                                    </div>
+                                    <div class="kd-info">
+                                        AVG: <span class="kd-value">${w.avgK}k / ${w.avgD}d</span>
+                                        <span class="kd-ratio ${kdCls}">K/D ${w.kd}</span>
+                                    </div>
+                                </div>
+                            </div>`;
                     });
                     html += `</div></div>`;
                 }
