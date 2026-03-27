@@ -353,14 +353,26 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            /* 長押し時の意図しない動作を防止 */
+            user-select: none;
+            -webkit-user-select: none;
+            -webkit-touch-callout: none;
         }
 
         .counter-btn:hover {
             background: rgba(255, 255, 255, 0.1);
         }
 
+        .counter-btn.active,
         .counter-btn:active {
             background: rgba(255, 255, 255, 0.2);
+            transform: scale(0.92);
+        }
+
+        .counter-btn.long-pressing {
+            background: var(--teal) !important;
+            color: #000 !important;
+            box-shadow: 0 0 15px var(--teal);
         }
 
         .counter-value {
@@ -881,15 +893,15 @@
             <div class="form-row">
                 <div class="counter-group">
                     <label>K</label>
-                    <button class="counter-btn" onclick="changeCounter('kill', -1)">－</button>
+                    <button class="counter-btn" data-type="kill" data-delta="-1">－</button>
                     <div class="counter-value" id="display-kill">0</div>
-                    <button class="counter-btn" onclick="changeCounter('kill', 1)">＋</button>
+                    <button class="counter-btn" data-type="kill" data-delta="1">＋</button>
                 </div>
                 <div class="counter-group">
                     <label>D</label>
-                    <button class="counter-btn" onclick="changeCounter('death', -1)">－</button>
+                    <button class="counter-btn" data-type="death" data-delta="-1">－</button>
                     <div class="counter-value" id="display-death">0</div>
-                    <button class="counter-btn" onclick="changeCounter('death', 1)">＋</button>
+                    <button class="counter-btn" data-type="death" data-delta="1">＋</button>
                 </div>
             </div>
             <div class="result-btns">
@@ -955,6 +967,61 @@
                 document.getElementById('display-death').textContent = deathCount;
             }
         }
+
+        // 長押し連打機能
+        let counterInterval;
+        let counterTimeout;
+        function startCounter(btn, type, delta) {
+            stopCounter();
+            btn.classList.add('active'); // 視覚的なフィードバック
+            changeCounter(type, delta);
+            
+            counterTimeout = setTimeout(() => {
+                btn.classList.add('long-pressing');
+                counterInterval = setInterval(() => {
+                    changeCounter(type, delta);
+                }, 80); // 少し速めに (12.5回/秒)
+            }, 400); // 400msで連打開始
+        }
+        function stopCounter() {
+            clearTimeout(counterTimeout);
+            clearInterval(counterInterval);
+            document.querySelectorAll('.counter-btn').forEach(b => {
+                b.classList.remove('active', 'long-pressing');
+            });
+        }
+
+        // イベントリスナーの登録
+        function setupCounterButtons() {
+            document.querySelectorAll('.counter-btn').forEach(btn => {
+                const type = btn.dataset.type;
+                const delta = parseInt(btn.dataset.delta);
+
+                // マウス操作
+                btn.addEventListener('mousedown', (e) => {
+                    if (e.button !== 0) return;
+                    startCounter(btn, type, delta);
+                });
+                // タッチ操作
+                btn.addEventListener('touchstart', (e) => {
+                    // console.log("touchstart", type, delta);
+                    if (e.cancelable) e.preventDefault();
+                    startCounter(btn, type, delta);
+                }, { passive: false });
+
+                // コンテキストメニュー（右クリック・長押しメニュー）を禁止
+                btn.addEventListener('contextmenu', (e) => {
+                    e.preventDefault();
+                });
+
+                // 共通の停止処理
+                window.addEventListener('mouseup', stopCounter);
+                window.addEventListener('touchend', stopCounter);
+                window.addEventListener('touchcancel', stopCounter);
+                btn.addEventListener('mouseleave', stopCounter);
+            });
+        }
+        setupCounterButtons();
 
         // タブ切り替え
         function switchTab(tab) {
